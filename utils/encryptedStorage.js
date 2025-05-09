@@ -2,6 +2,7 @@ import EncryptedStorage from 'react-native-encrypted-storage';
 
 const EXERCISES_KEY = 'favouriteExercises';
 const FREQ_KEY = 'gymFrequency';
+const LOGS_KEY = 'workoutLogs';
 
 export async function saveFavouriteExercises(exercises) {
   try {
@@ -36,5 +37,27 @@ export async function getGymFrequency() {
   } catch (err) {
     console.error('Error loading gym frequency', err);
     return 3;
+  }
+}
+
+export async function saveWorkoutLog(newLog) {
+  try {
+    const existingLogs = await EncryptedStorage.getItem(LOGS_KEY);
+    const logs = existingLogs ? JSON.parse(existingLogs) : [];
+
+    logs.push(newLog);
+    await EncryptedStorage.setItem(LOGS_KEY, JSON.stringify(logs));
+  } catch (err) {
+    console.err('Error saving workout log', err);
+  }
+}
+
+export async function getWorkoutLogs() {
+  try {
+    const logs = await EncryptedStorage.getItem(LOGS_KEY);
+    return logs ? JSON.parse(logs) : [];
+  } catch (err) {
+    console.error('Error loading workout logs', err);
+    return [];
   }
 }

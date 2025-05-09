@@ -14,6 +14,7 @@ import {
   getFavouriteExercises,
   saveGymFrequency,
   getGymFrequency,
+  getWorkoutLogs,
 } from '../utils/encryptedStorage';
 
 export default function HomeScreen({navigation}) {
@@ -44,6 +45,14 @@ export default function HomeScreen({navigation}) {
       setPlan(generated);
     }
   }, [favouriteExercises, selectedDays]);
+
+  useEffect(() => {
+    const checkLogs = async () => {
+      const logs = await getWorkoutLogs();
+      console.log('Saved workout logs:', logs);
+    };
+    checkLogs();
+  }, []);
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
@@ -126,7 +135,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 30,
     borderRadius: 10,
     marginVertical: 10,
-    width: '80%',
+    alignSelf: 'center',
     alignItems: 'center',
   },
   buttonText: {

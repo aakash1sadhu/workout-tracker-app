@@ -5,8 +5,9 @@ import {
   TouchableOpacity,
   ScrollView,
   StyleSheet,
+  Alert,
 } from 'react-native';
-import {getFavouriteExercises} from '../utils/encryptedStorage';
+import {getFavouriteExercises, saveWorkoutLog} from '../utils/encryptedStorage';
 import {COLORS} from '../utils/colors';
 
 export default function LogWorkoutScreen({navigation}) {
@@ -35,7 +36,7 @@ export default function LogWorkoutScreen({navigation}) {
     }));
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     const today = new Date().toISOString().split('T')[0];
     const log = {
       date: today,
@@ -44,8 +45,8 @@ export default function LogWorkoutScreen({navigation}) {
         .map(([name]) => name),
     };
 
-    console.log('Saved workout log:', log);
-
+    await saveWorkoutLog(log);
+    Alert.alert('Workout logged! 💪🏽');
     navigation.goBack();
   };
 
