@@ -16,7 +16,7 @@ export default function App() {
         <Stack.Screen name="Schedule" component={ScheduleScreen} />
         <Stack.Screen name="LogWorkout" component={LogWorkoutScreen} />
         <Stack.Screen name="History" component={HistoryScreen} />
-        <Stack.Screen name="SelectExercise" component={ExerciseSelectScreen} />
+        <Stack.Screen name="SelectExercises" component={ExerciseSelectScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );

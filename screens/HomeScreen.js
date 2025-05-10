@@ -128,6 +128,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginBottom: 30,
     color: COLORS.textPrimary,
+    textAlign: 'center',
   },
   button: {
     backgroundColor: COLORS.buttonBackground,

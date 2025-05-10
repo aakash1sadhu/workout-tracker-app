@@ -61,3 +61,11 @@ export async function getWorkoutLogs() {
     return [];
   }
 }
+
+export async function clearWorkoutLogs() {
+  try {
+    await EncryptedStorage.removeItem('workoutLogs');
+  } catch (err) {
+    console.error('Error clearing workout logs', err);
+  }
+}

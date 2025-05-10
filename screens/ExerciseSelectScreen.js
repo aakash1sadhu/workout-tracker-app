@@ -22,7 +22,9 @@ export default function ExerciseSelectScreen({navigation}) {
   useEffect(() => {
     const load = async () => {
       const saved = await getFavouriteExercises();
-      if (saved) setSelected(saved.map(e => e.name));
+      if (saved) {
+        setSelected(saved.map(e => e.name));
+      }
     };
     load();
   }, []);
