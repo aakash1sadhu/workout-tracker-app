@@ -66,7 +66,7 @@ export default function HomeScreen({navigation}) {
 
       <TouchableOpacity
         style={styles.button}
-        onPress={() => navigation.navigate('LogWorkout')}>
+        onPress={() => navigation.navigate('Log Workout')}>
         <Text style={styles.buttonText}>Log Workout</Text>
       </TouchableOpacity>
 
@@ -78,8 +78,8 @@ export default function HomeScreen({navigation}) {
 
       <TouchableOpacity
         style={styles.button}
-        onPress={() => navigation.navigate('SelectExercises')}>
-        <Text style={styles.buttonText}>Edit Favourite Exercises</Text>
+        onPress={() => navigation.navigate('Select Exercises')}>
+        <Text style={styles.buttonText}>Select Favourite Exercises</Text>
       </TouchableOpacity>
       <Text style={styles.freqLabel}>How many days a week do you train?</Text>
       <View style={styles.buttonGroup}>

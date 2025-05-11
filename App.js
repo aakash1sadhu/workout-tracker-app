@@ -14,9 +14,12 @@ export default function App() {
       <Stack.Navigator initialRouteName="Home">
         <Stack.Screen name="Home" component={HomeScreen} />
         <Stack.Screen name="Schedule" component={ScheduleScreen} />
-        <Stack.Screen name="LogWorkout" component={LogWorkoutScreen} />
+        <Stack.Screen name="Log Workout" component={LogWorkoutScreen} />
         <Stack.Screen name="History" component={HistoryScreen} />
-        <Stack.Screen name="SelectExercises" component={ExerciseSelectScreen} />
+        <Stack.Screen
+          name="Select Exercises"
+          component={ExerciseSelectScreen}
+        />
       </Stack.Navigator>
     </NavigationContainer>
   );

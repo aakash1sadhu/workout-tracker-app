@@ -3,6 +3,8 @@ import EncryptedStorage from 'react-native-encrypted-storage';
 const EXERCISES_KEY = 'favouriteExercises';
 const FREQ_KEY = 'gymFrequency';
 const LOGS_KEY = 'workoutLogs';
+const CUSTOM_EXERCISES_KEY = 'customExercises';
+const DELETED_KEY = 'deleted_exercises';
 
 export async function saveFavouriteExercises(exercises) {
   try {
@@ -67,5 +69,60 @@ export async function clearWorkoutLogs() {
     await EncryptedStorage.removeItem('workoutLogs');
   } catch (err) {
     console.error('Error clearing workout logs', err);
+  }
+}
+
+export async function saveCustomExercise(exercise) {
+  try {
+    const existing = await EncryptedStorage.getItem(CUSTOM_EXERCISES_KEY);
+    const exercises = existing ? JSON.parse(existing) : [];
+    exercises.push(exercise);
+    await EncryptedStorage.setItem(
+      CUSTOM_EXERCISES_KEY,
+      JSON.stringify(exercises),
+    );
+  } catch (err) {
+    console.error('Error saving custom exercise', err);
+  }
+}
+
+export async function getCustomExercises() {
+  try {
+    const saved = await EncryptedStorage.getItem(CUSTOM_EXERCISES_KEY);
+    return saved ? JSON.parse(saved) : [];
+  } catch (err) {
+    console.error('Error loading custom exercises', err);
+    return [];
+  }
+}
+
+export async function removeCustomExercise(nameToRemove) {
+  try {
+    const saved = await getCustomExercises();
+    const updated = saved.filter(ex => ex.name !== nameToRemove);
+    await EncryptedStorage.setItem('custom_exercises', JSON.stringify(updated));
+    return updated;
+  } catch (err) {
+    console.error('Failed to remove exercise:', err);
+    return [];
+  }
+}
+
+export async function getDeletedExercises() {
+  try {
+    const raw = await EncryptedStorage.getItem(DELETED_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
+}
+
+export async function saveDeletedExercise(nameToDelete) {
+  try {
+    const current = await getDeletedExercises();
+    const updated = [...new Set([...current, nameToDelete])];
+    await EncryptedStorage.setItem(DELETED_KEY, JSON.stringify(updated));
+  } catch (err) {
+    console.error('Error saving deleted exercise', err);
   }
 }

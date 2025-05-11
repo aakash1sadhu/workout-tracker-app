@@ -8,6 +8,7 @@ import {
   Alert,
 } from 'react-native';
 import {saveWorkout} from '../utils/storage';
+import {COLORS} from '../utils/colors';
 
 export default function ScheduleScreen() {
   const [name, setName] = useState('');
@@ -88,7 +89,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#f9fafb',
   },
   button: {
-    backgroundColor: '#3b82f6',
+    backgroundColor: COLORS.purple,
     paddingVertical: 15,
     paddingHorizontal: 15,
     borderRadius: 10,
