@@ -16,6 +16,8 @@ import {
   removeCustomExercise,
   getDeletedExercises,
   saveDeletedExercise,
+  saveTrainingGoal,
+  getTrainingGoal,
 } from '../utils/encryptedStorage';
 
 const ALL_EXERCISES = [
@@ -32,6 +34,7 @@ export default function SelectExercisesScreen() {
   const [exerciseName, setExerciseName] = useState('');
   const [category, setCategory] = useState(null);
   const [allExercises, setAllExercises] = useState(ALL_EXERCISES);
+  const [trainingGoal, setTrainingGoal] = useState('Both');
 
   const handleSave = async () => {
     if (!exerciseName || !category) {
@@ -93,9 +96,10 @@ export default function SelectExercisesScreen() {
   };
 
   useEffect(() => {
-    const loadSavedExercises = async () => {
+    const loadScreenData = async () => {
       const saved = await getCustomExercises();
       const deleted = await getDeletedExercises();
+      const goal = await getTrainingGoal();
 
       //Merge and deduplicate by name
       const merged = [...ALL_EXERCISES, ...saved];
@@ -107,14 +111,38 @@ export default function SelectExercisesScreen() {
       const filtered = unique.filter(ex => !deleted.includes(ex.name));
 
       setAllExercises(filtered);
+      setTrainingGoal(goal);
     };
-    loadSavedExercises();
+    loadScreenData();
   }, []);
 
   return (
     <ScrollView
       contentContainerStyle={styles.container}
       keyboardShouldPersistTaps="handled">
+      <Text style={styles.label}>Select Your Goal</Text>
+      <View style={styles.goalSlider}>
+        {['Strength', 'Both', 'Hypertrophy'].map(goal => (
+          <TouchableOpacity
+            key={goal}
+            style={[
+              styles.goalOption,
+              trainingGoal === goal && styles.goalOptionSelected,
+            ]}
+            onPress={() => {
+              setTrainingGoal(goal);
+              saveTrainingGoal(goal);
+            }}>
+            <Text
+              style={[
+                styles.goalText,
+                trainingGoal === goal && styles.goalTextSelected,
+              ]}>
+              {goal}
+            </Text>
+          </TouchableOpacity>
+        ))}
+      </View>
       <Text style={styles.title}>Add New Exercise</Text>
 
       <TextInput
@@ -181,6 +209,31 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     color: COLORS.textPrimary,
     textAlign: 'center',
+  },
+  goalSlider: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    backgroundColor: COLORS.card,
+    borderRadius: 8,
+    marginVertical: 12,
+    padding: 4,
+  },
+  goalOption: {
+    flex: 1,
+    paddingVertical: 12,
+    alignItems: 'center',
+    borderRadius: 8,
+  },
+  goalOptionSelected: {
+    backgroundColor: COLORS.purple,
+  },
+  goalText: {
+    color: COLORS.textPrimary,
+    fontWeight: '500',
+  },
+  goalTextSelected: {
+    color: COLORS.buttonText,
+    fontWeight: 'bold',
   },
   input: {
     borderWidth: 1,

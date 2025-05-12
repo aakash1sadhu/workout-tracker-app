@@ -5,6 +5,7 @@ const FREQ_KEY = 'gymFrequency';
 const LOGS_KEY = 'workoutLogs';
 const CUSTOM_EXERCISES_KEY = 'customExercises';
 const DELETED_KEY = 'deleted_exercises';
+const TRAINING_GOAL_KEY = 'training_goal';
 
 export async function saveFavouriteExercises(exercises) {
   try {
@@ -124,5 +125,22 @@ export async function saveDeletedExercise(nameToDelete) {
     await EncryptedStorage.setItem(DELETED_KEY, JSON.stringify(updated));
   } catch (err) {
     console.error('Error saving deleted exercise', err);
+  }
+}
+
+export async function saveTrainingGoal(goal) {
+  try {
+    await EncryptedStorage.setItem(TRAINING_GOAL_KEY, goal);
+  } catch (err) {
+    console.error('Error saving training goal:', err);
+  }
+}
+
+export async function getTrainingGoal() {
+  try {
+    const goal = await EncryptedStorage.getItem(TRAINING_GOAL_KEY);
+    return goal || 'Both'; //default to 'Both if nothing is set
+  } catch {
+    return 'Both';
   }
 }
