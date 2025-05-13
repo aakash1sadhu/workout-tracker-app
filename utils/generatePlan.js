@@ -1,13 +1,4 @@
-// Hardcoded list of favourite exercises
-const favouriteExercises = [
-  {name: 'Bench Press', category: 'Upper'},
-  {name: 'Squats', category: 'Lower'},
-  {name: 'Deadlift', category: 'Back'},
-  {name: 'Shoulder Press', category: 'Upper'},
-  {name: 'Pull-ups', category: 'Back'},
-  {name: 'Lunges', category: 'Lower'},
-  {name: 'Burpees', category: 'Full'},
-];
+import {DEFAULT_EXERCISES} from './defaultExercises';
 
 //Workout day tupes by weekly gym frequency
 const splitByDays = {
@@ -16,7 +7,7 @@ const splitByDays = {
   4: ['Upper', 'LowerBack', 'Upper', 'LowerBack'],
 };
 
-export function generateWeeklyPlan(favouriteExercises, gymDays) {
+export function generateWeeklyPlan(DEFAULT_EXERCISES, gymDays) {
   const plan = [];
   const split = splitByDays[gymDays];
 
@@ -26,9 +17,10 @@ export function generateWeeklyPlan(favouriteExercises, gymDays) {
   }
 
   split.forEach((dayFocus, i) => {
-    const dayExercises = favouriteExercises.filter(ex => {
-      if (dayFocus === 'LowerBack')
+    const dayExercises = DEFAULT_EXERCISES.filter(ex => {
+      if (dayFocus === 'LowerBack') {
         return ex.category === 'Lower' || ex.category === 'Back';
+      }
       return ex.category === dayFocus;
     });
 
@@ -43,4 +35,16 @@ export function generateWeeklyPlan(favouriteExercises, gymDays) {
   });
 
   return plan;
+}
+
+export function getTodayWorkoutPlan(DEFAULT_EXERCISES, gymDays) {
+  const weeklyPlan = generateWeeklyPlan(DEFAULT_EXERCISES, gymDays);
+
+  const dayIndex = new Date().getDay() % weeklyPlan.length;
+  const todayPlan = weeklyPlan[dayIndex];
+
+  const todayExercises = todayPlan.exercises;
+
+  //Return full exercise details (not just names)
+  return DEFAULT_EXERCISES.filter(ex => todayExercises.includes(ex.name));
 }
