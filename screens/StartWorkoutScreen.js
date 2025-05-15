@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react';
-import {View, Text, ScrollView, StyleSheet} from 'react-native';
+import {View, Text, ScrollView, StyleSheet, Alert} from 'react-native';
 import {COLORS} from '../utils/colors';
 import {
   getCustomExercises,
@@ -7,7 +7,6 @@ import {
   getTrainingGoal,
   getGymFrequency,
 } from '../utils/encryptedStorage';
-import {DEFAULT_EXERCISES} from '../utils/defaultExercises';
 import {getTodayWorkoutPlan} from '../utils/generatePlan';
 
 const getRepsAndSets = goal => {
@@ -38,7 +37,7 @@ export default function StartWorkoutScreen() {
         getGymFrequency(),
       ]);
 
-      const allExercises = [...DEFAULT_EXERCISES, ...customExercises].filter(
+      const allExercises = customExercises.filter(
         (ex, index, self) =>
           index === self.findIndex(e => e.name === ex.name) &&
           !deleted.includes(ex.name),
@@ -53,6 +52,16 @@ export default function StartWorkoutScreen() {
 
       setWorkout(withRepsSets);
       setGoal(goal);
+
+      //Run alert after React updates state
+      if (withRepsSets.length === 0) {
+        setTimeout(() => {
+          Alert.alert(
+            'No Exercises Found',
+            'You have no exercises saved. Please add some in the "Select Exercises" tab.',
+          );
+        }, 0);
+      }
     };
 
     loadWorkout();
@@ -61,15 +70,21 @@ export default function StartWorkoutScreen() {
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.title}>Today's Workout ({goal})</Text>
-      {workout.map((ex, index) => (
-        <View key={index} style={styles.exerciseCard}>
-          <Text style={styles.exerciseName}>{ex.name}</Text>
-          <Text style={styles.exerciseCategory}>{ex.category}</Text>
-          <Text style={styles.exerciseRepsSets}>
-            {ex.sets} sets x {ex.reps} reps
-          </Text>
-        </View>
-      ))}
+      {workout.length === 0 ? (
+        <Text style={styles.empty}>
+          No workout for today. Add exercises in the "Select Exercises" screen.
+        </Text>
+      ) : (
+        workout.map((ex, index) => (
+          <View key={index} style={styles.exerciseCard}>
+            <Text style={styles.exerciseName}>{ex.name}</Text>
+            <Text style={styles.exerciseCategory}>{ex.category}</Text>
+            <Text style={styles.exerciseRepsSets}>
+              {ex.sets} sets x {ex.reps} reps
+            </Text>
+          </View>
+        ))
+      )}
     </ScrollView>
   );
 }
@@ -109,5 +124,11 @@ const styles = StyleSheet.create({
     fontStyle: 'italic',
     marginTop: 8,
     color: COLORS.textSecondary,
+  },
+  empty: {
+    textAlign: 'center',
+    color: COLORS.textSecondary,
+    fontSize: 16,
+    marginTop: 32,
   },
 });

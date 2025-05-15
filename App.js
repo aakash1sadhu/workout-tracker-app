@@ -5,6 +5,7 @@ import ScheduleScreen from './screens/ScheduleScreen';
 import LogWorkoutScreen from './screens/LogWorkoutScreen';
 import HistoryScreen from './screens/HistoryScreen';
 import ExerciseSelectScreen from './screens/ExerciseSelectScreen';
+import StartWorkoutScreen from './screens/StartWorkoutScreen';
 
 const Stack = createStackNavigator();
 
@@ -19,6 +20,11 @@ export default function App() {
         <Stack.Screen
           name="Select Exercises"
           component={ExerciseSelectScreen}
+        />
+        <Stack.Screen
+          name="StartWorkout"
+          component={StartWorkoutScreen}
+          options={{title: 'Start Workout'}}
         />
       </Stack.Navigator>
     </NavigationContainer>

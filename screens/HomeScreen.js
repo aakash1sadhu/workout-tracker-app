@@ -81,6 +81,13 @@ export default function HomeScreen({navigation}) {
         onPress={() => navigation.navigate('Select Exercises')}>
         <Text style={styles.buttonText}>Select Favourite Exercises</Text>
       </TouchableOpacity>
+
+      <TouchableOpacity
+        style={styles.button}
+        onPress={() => navigation.navigate('StartWorkout')}>
+        <Text style={styles.buttonText}>Start Today's Workout</Text>
+      </TouchableOpacity>
+
       <Text style={styles.freqLabel}>How many days a week do you train?</Text>
       <View style={styles.buttonGroup}>
         {[2, 3, 4].map(num => (
