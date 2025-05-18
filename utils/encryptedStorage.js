@@ -6,6 +6,7 @@ const LOGS_KEY = 'workoutLogs';
 const CUSTOM_EXERCISES_KEY = 'customExercises';
 const DELETED_KEY = 'deleted_exercises';
 const TRAINING_GOAL_KEY = 'training_goal';
+const HISTORY_KEY = 'workout_history';
 
 export async function saveFavouriteExercises(exercises) {
   try {
@@ -77,11 +78,24 @@ export async function saveCustomExercise(exercise) {
   try {
     const existing = await EncryptedStorage.getItem(CUSTOM_EXERCISES_KEY);
     const exercises = existing ? JSON.parse(existing) : [];
-    exercises.push(exercise);
+    const cleaned = {
+      name: exercise.name.trim().toLowerCase(),
+      category: exercise.category,
+    };
+
+    const alreadyExists = exercises.some(ex => ex.name === cleaned.name);
+    if (alreadyExists) {
+      console.log(`⛔ Exercise "${cleaned.name}" already exists`);
+      return;
+    }
+
+    exercises.push(cleaned);
     await EncryptedStorage.setItem(
       CUSTOM_EXERCISES_KEY,
       JSON.stringify(exercises),
     );
+
+    console.log('Saved exercise', exercises);
   } catch (err) {
     console.error('Error saving custom exercise', err);
   }
@@ -101,7 +115,10 @@ export async function removeCustomExercise(nameToRemove) {
   try {
     const saved = await getCustomExercises();
     const updated = saved.filter(ex => ex.name !== nameToRemove);
-    await EncryptedStorage.setItem('custom_exercises', JSON.stringify(updated));
+    await EncryptedStorage.setItem(
+      CUSTOM_EXERCISES_KEY,
+      JSON.stringify(updated),
+    );
     return updated;
   } catch (err) {
     console.error('Failed to remove exercise:', err);
@@ -142,5 +159,16 @@ export async function getTrainingGoal() {
     return goal || 'Both'; //default to 'Both if nothing is set
   } catch {
     return 'Both';
+  }
+}
+
+export async function saveWorkoutHistory(entry) {
+  try {
+    const raw = await EncryptedStorage.getItem(HISTORY_KEY);
+    const history = raw ? JSON.parse(raw) : [];
+    history.unshift(entry); //add to top
+    await EncryptedStorage.setItem(HISTORY_KEY, JSON.stringify(history));
+  } catch (err) {
+    console.error('Failed to save workout history', err);
   }
 }

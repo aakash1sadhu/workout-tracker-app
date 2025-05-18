@@ -19,21 +19,12 @@ import {
   saveTrainingGoal,
   getTrainingGoal,
 } from '../utils/encryptedStorage';
-
-const ALL_EXERCISES = [
-  {name: 'bench press', category: 'Upper'},
-  {name: 'squats', category: 'Lower'},
-  {name: 'deadlift', category: 'Back'},
-  {name: 'pull-ups', category: 'Back'},
-  {name: 'shoulder press', category: 'Upper'},
-  {name: 'lunges', category: 'Lower'},
-  {name: 'burpees', category: 'Full'},
-];
+import {get} from 'react-native/Libraries/TurboModule/TurboModuleRegistry';
 
 export default function SelectExercisesScreen() {
   const [exerciseName, setExerciseName] = useState('');
   const [category, setCategory] = useState(null);
-  const [allExercises, setAllExercises] = useState(ALL_EXERCISES);
+  const [allExercises, setAllExercises] = useState([]);
   const [trainingGoal, setTrainingGoal] = useState('Both');
 
   const handleSave = async () => {
@@ -48,10 +39,16 @@ export default function SelectExercisesScreen() {
       category,
     };
 
-    await saveCustomExercise(newExercise);
-    Alert.alert('Exercise saved!');
-    setExerciseName('');
-    setCategory(null);
+    try {
+      await saveCustomExercise(newExercise);
+      setExerciseName('');
+      setCategory(null);
+      Alert.alert('Exercise saved!');
+
+      await loadScreenData();
+    } catch (err) {
+      console.error('Error saving and relaoding custom exercise:', err);
+    }
   };
 
   const handleDelete = async name => {
@@ -65,17 +62,8 @@ export default function SelectExercisesScreen() {
 
     await saveDeletedExercise(name);
 
-    //Reload visible exercises
-    const saved = await getCustomExercises();
-    const deleted = await getDeletedExercises();
-
-    const merged = [...ALL_EXERCISES, ...saved];
-    const unique = merged.filter(
-      (ex, index, self) => index === self.findIndex(e => e.name === ex.name),
-    );
-    const filtered = unique.filter(ex => !deleted.includes(ex.name));
-
-    setAllExercises(filtered);
+    //Reload the full state
+    loadScreenData();
   };
 
   const handleResetAll = async () => {
@@ -83,36 +71,35 @@ export default function SelectExercisesScreen() {
       await EncryptedStorage.removeItem('deleted_exercises');
       const saved = await getCustomExercises();
 
-      const merged = [...ALL_EXERCISES, ...saved];
-      const unique = merged.filter(
+      const unique = saved.filter(
         (ex, index, self) => index === self.findIndex(e => e.name === ex.name),
       );
 
-      setAllExercises(unique);
+      setAllExercises([...unique]);
       Alert.alert('Reset complete', 'All exercises have been restored.');
     } catch (err) {
       console.error('Failed to reset deleted exercises', err);
     }
   };
 
+  const loadScreenData = async () => {
+    const saved = await getCustomExercises();
+    const deleted = await getDeletedExercises();
+    const goal = await getTrainingGoal();
+
+    const unique = saved.filter(
+      (ex, index, self) =>
+        index === self.findIndex(e => e.name === ex.name) && true,
+    );
+
+    console.log('📦 Reloaded exercises:', unique);
+    console.log('🗑 Deleted exercises:', deleted);
+    console.log('📦 Saved exercises:', saved);
+    setAllExercises([...unique]);
+    setTrainingGoal(goal);
+  };
+
   useEffect(() => {
-    const loadScreenData = async () => {
-      const saved = await getCustomExercises();
-      const deleted = await getDeletedExercises();
-      const goal = await getTrainingGoal();
-
-      //Merge and deduplicate by name
-      const merged = [...ALL_EXERCISES, ...saved];
-      const unique = merged.filter(
-        (ex, index, self) => index === self.findIndex(e => e.name === ex.name),
-      );
-
-      //Remove any that were deleted
-      const filtered = unique.filter(ex => !deleted.includes(ex.name));
-
-      setAllExercises(filtered);
-      setTrainingGoal(goal);
-    };
     loadScreenData();
   }, []);
 
