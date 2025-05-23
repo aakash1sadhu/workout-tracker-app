@@ -92,9 +92,6 @@ export default function SelectExercisesScreen() {
         index === self.findIndex(e => e.name === ex.name) && true,
     );
 
-    console.log('📦 Reloaded exercises:', unique);
-    console.log('🗑 Deleted exercises:', deleted);
-    console.log('📦 Saved exercises:', saved);
     setAllExercises([...unique]);
     setTrainingGoal(goal);
   };
