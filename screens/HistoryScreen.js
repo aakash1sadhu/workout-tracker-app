@@ -8,7 +8,10 @@ import {
   Alert,
 } from 'react-native';
 import {parseISO, format} from 'date-fns';
-import {getWorkoutLogs, clearWorkoutLogs} from '../utils/encryptedStorage';
+import {
+  getWorkoutHistory,
+  clearWorkoutHistory,
+} from '../utils/encryptedStorage';
 import {COLORS} from '../utils/colors';
 
 export default function HistoryScreen() {
@@ -16,7 +19,7 @@ export default function HistoryScreen() {
 
   useEffect(() => {
     const loadLogs = async () => {
-      const stored = await getWorkoutLogs();
+      const stored = await getWorkoutHistory();
       setLogs(stored.reverse()); //Most recent logs first
     };
     loadLogs();
@@ -32,7 +35,7 @@ export default function HistoryScreen() {
           text: 'Yes, clear it',
           style: 'destructive',
           onPress: async () => {
-            await clearWorkoutLogs();
+            await clearWorkoutHistory();
             setLogs([]);
           },
         },
@@ -55,10 +58,19 @@ export default function HistoryScreen() {
             <Text style={styles.date}>
               {format(parseISO(log.date), 'EEEE do MMMM yyyy')}
             </Text>
+            <Text style={styles.duration}>
+              Duration: {log.duration || '?'} min
+            </Text>
             {log.exercises.map((ex, i) => (
-              <Text key={i} style={styles.exercise}>
-                • {ex}
-              </Text>
+              <View key={i} style={styles.exerciseGroup}>
+                <Text style={styles.exercise}>
+                  • {ex.name} ({ex.category})
+                </Text>
+                <Text style={styles.setDetail}>
+                  {ex.completedSets?.filter(Boolean).length || 0} / {ex.sets}{' '}
+                  sets completed
+                </Text>
+              </View>
             ))}
           </View>
         ))
@@ -115,8 +127,21 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     color: COLORS.textPrimary,
   },
+  duration: {
+    fontSize: 14,
+    color: COLORS.textSecondary,
+    marginBottom: 4,
+  },
   exercise: {
     fontSize: 16,
     color: COLORS.textSecondary,
+  },
+  exerciseGroup: {
+    marginBottom: 6,
+  },
+  setDetail: {
+    fontSize: 14,
+    color: COLORS.textSecondary,
+    marginLeft: 12,
   },
 });

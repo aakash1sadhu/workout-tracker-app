@@ -10,27 +10,33 @@ import {useEffect, useState} from 'react';
 import {generateWeeklyPlan} from '../utils/generatePlan';
 import {COLORS} from '../utils/colors';
 import {
-  saveFavouriteExercises,
-  getFavouriteExercises,
+  saveCustomExercise,
+  getCustomExercises,
+  getDeletedExercises,
   saveGymFrequency,
   getGymFrequency,
-  getWorkoutLogs,
+  getWorkoutHistory,
 } from '../utils/encryptedStorage';
 
 export default function HomeScreen({navigation}) {
-  const [favouriteExercises, setFavouriteExercises] = useState([]);
+  const [customExercises, setCustomExercises] = useState([]);
   const [selectedDays, setSelectedDays] = useState(3);
   const [plan, setPlan] = useState([]);
 
   //Load saved exercises on mount
   useEffect(() => {
     const fetchData = async () => {
-      const savedExercises = await getFavouriteExercises();
+      const saved = await getCustomExercises();
+      const deleted = await getDeletedExercises();
+      const filtered = saved.filter(
+        (ex, index, self) =>
+          index === self.findIndex(e => e.name === ex.name) &&
+          !deleted.includes(ex.name),
+      );
+
       const savedDays = await getGymFrequency();
 
-      if (savedExercises) {
-        setFavouriteExercises(savedExercises);
-      }
+      setCustomExercises(filtered);
       if (savedDays) {
         setSelectedDays(savedDays);
       }
@@ -40,15 +46,15 @@ export default function HomeScreen({navigation}) {
 
   //Rengerate plan when exercises or days change
   useEffect(() => {
-    if (favouriteExercises.length > 0) {
-      const generated = generateWeeklyPlan(favouriteExercises, selectedDays);
+    if (customExercises.length > 0) {
+      const generated = generateWeeklyPlan(customExercises, selectedDays);
       setPlan(generated);
     }
-  }, [favouriteExercises, selectedDays]);
+  }, [customExercises, selectedDays]);
 
   useEffect(() => {
     const checkLogs = async () => {
-      const logs = await getWorkoutLogs();
+      const logs = await getWorkoutHistory();
       console.log('Saved workout logs:', logs);
     };
     checkLogs();

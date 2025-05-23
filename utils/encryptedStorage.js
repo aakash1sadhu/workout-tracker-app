@@ -56,21 +56,21 @@ export async function saveWorkoutLog(newLog) {
   }
 }
 
-export async function getWorkoutLogs() {
+export async function getWorkoutHistory() {
   try {
-    const logs = await EncryptedStorage.getItem(LOGS_KEY);
-    return logs ? JSON.parse(logs) : [];
+    const raw = await EncryptedStorage.getItem(HISTORY_KEY);
+    return raw ? JSON.parse(raw) : [];
   } catch (err) {
-    console.error('Error loading workout logs', err);
+    console.error('Error loading workout history', err);
     return [];
   }
 }
 
-export async function clearWorkoutLogs() {
+export async function clearWorkoutHistory() {
   try {
-    await EncryptedStorage.removeItem('workoutLogs');
+    await EncryptedStorage.removeItem(HISTORY_KEY);
   } catch (err) {
-    console.error('Error clearing workout logs', err);
+    console.error('Error clearing workout history', err);
   }
 }
 

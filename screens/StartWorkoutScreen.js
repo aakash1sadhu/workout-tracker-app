@@ -36,6 +36,9 @@ export default function StartWorkoutScreen() {
   const [workout, setWorkout] = useState([]);
   const [goal, setGoal] = useState('Both');
   const [setProgress, setSetProgress] = useState([]);
+  const [currentExerciseIndex, setCurrentExerciseIndex] = useState(0);
+  const [currentSetIndex, setCurrentSetIndex] = useState(0);
+  const [startTime, setStartTime] = useState(null);
 
   useEffect(() => {
     const loadWorkout = async () => {
@@ -80,6 +83,7 @@ export default function StartWorkoutScreen() {
     };
 
     loadWorkout();
+    setStartTime(Date.now());
   }, []);
 
   const toggleSet = (exerciseIndex, setIndex) => {
@@ -91,8 +95,39 @@ export default function StartWorkoutScreen() {
     });
   };
 
-  const handleCompleteWorkout = async () => {
+  const handleNextSet = () => {
+    const currentExercise = workout[currentExerciseIndex];
+    const currentSetCount = currentExercise.sets;
+
+    //Mark set as completed
+    setSetProgress(prev => {
+      const updated = [...prev];
+      updated[currentExerciseIndex] = [...updated[currentExerciseIndex]];
+      updated[currentExerciseIndex][currentSetIndex] = true;
+      return updated;
+    });
+
+    //Advance to next set/exercise
+    const isLastSet = currentSetIndex + 1 >= currentSetCount;
+    const isLastExercise = currentExerciseIndex + 1 >= workout.length;
+
+    if (isLastSet) {
+      if (isLastExercise) {
+        completeAndSaveWorkout();
+        return;
+      }
+      setCurrentExerciseIndex(prev => prev + 1);
+      setCurrentSetIndex(0);
+    } else {
+      setCurrentSetIndex(prev => prev + 1);
+    }
+  };
+
+  const completeAndSaveWorkout = async () => {
     const now = new Date().toISOString();
+    const endTime = Date.now();
+    const durationMs = endTime - startTime;
+    const durationMinutes = Math.round(durationMs / 60000);
 
     const completed = workout.map((ex, i) => ({
       name: ex.name,
@@ -105,16 +140,33 @@ export default function StartWorkoutScreen() {
     const entry = {
       date: now,
       goal,
+      duration: durationMinutes,
       exercises: completed,
     };
 
     await saveWorkoutHistory(entry);
-    Alert.alert('Workout Saved', 'Your workout has been logged to history!');
+    Alert.alert('Workout Saved', `Logged! Duration ${durationMinutes} min`);
   };
+
+  const handleCompleteWorkout = () => {
+    completeAndSaveWorkout();
+  };
+
+  const allSetsCompleted =
+    workout.length > 0 &&
+    setProgress.every(exerciseSets => exerciseSets.every(set => set === true));
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.title}>Today's Workout ({goal})</Text>
+      <View style={styles.progressTracker}>
+        <Text style={styles.progressTitle}>Now Doing:</Text>
+        {workout[currentExerciseIndex] && (
+          <Text style={styles.progressDetail}>
+            {workout[currentExerciseIndex].name} - Set {currentSetIndex + 1}
+          </Text>
+        )}
+      </View>
       {workout.length === 0 ? (
         <Text style={styles.empty}>
           No workout for today. Add exercises in the "Select Exercises" screen.
@@ -142,11 +194,16 @@ export default function StartWorkoutScreen() {
           </View>
         ))
       )}
-      <TouchableOpacity
-        style={styles.completeButton}
-        onPress={handleCompleteWorkout}>
-        <Text style={styles.completeButtonText}>Complete Workout</Text>
+      <TouchableOpacity style={styles.nextButton} onPress={handleNextSet}>
+        <Text style={styles.nextButtonText}>Next Set</Text>
       </TouchableOpacity>
+      {allSetsCompleted && (
+        <TouchableOpacity
+          style={styles.completeButton}
+          onPress={handleCompleteWorkout}>
+          <Text style={styles.completeButtonText}>Complete Workout</Text>
+        </TouchableOpacity>
+      )}
     </ScrollView>
   );
 }
@@ -170,6 +227,19 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     borderWidth: 1,
     borderColor: COLORS.purple,
+  },
+  progressTracker: {
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  progressTitle: {
+    fontSize: 16,
+    color: COLORS.textSecondary,
+  },
+  progressDetail: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: COLORS.textPrimary,
   },
   exerciseName: {
     fontSize: 18,
@@ -210,6 +280,18 @@ const styles = StyleSheet.create({
     color: COLORS.textSecondary,
     fontSize: 16,
     marginTop: 32,
+  },
+  nextButton: {
+    backgroundColor: COLORS.purple,
+    padding: 16,
+    borderRadius: 8,
+    marginTop: 16,
+    alignItems: 'center',
+  },
+  nextButtonText: {
+    color: COLORS.buttonText,
+    fontWeight: 'bold',
+    fontSize: 16,
   },
   completeButton: {
     backgroundColor: COLORS.purple,
