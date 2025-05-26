@@ -66,24 +66,6 @@ export default function HomeScreen({navigation}) {
 
       <TouchableOpacity
         style={styles.button}
-        onPress={() => navigation.navigate('Schedule')}>
-        <Text style={styles.buttonText}>Schedule Workout</Text>
-      </TouchableOpacity>
-
-      <TouchableOpacity
-        style={styles.button}
-        onPress={() => navigation.navigate('Log Workout')}>
-        <Text style={styles.buttonText}>Log Workout</Text>
-      </TouchableOpacity>
-
-      <TouchableOpacity
-        style={styles.button}
-        onPress={() => navigation.navigate('History')}>
-        <Text style={styles.buttonText}>View History</Text>
-      </TouchableOpacity>
-
-      <TouchableOpacity
-        style={styles.button}
         onPress={() => navigation.navigate('Select Exercises')}>
         <Text style={styles.buttonText}>Select Favourite Exercises</Text>
       </TouchableOpacity>
@@ -92,6 +74,12 @@ export default function HomeScreen({navigation}) {
         style={styles.button}
         onPress={() => navigation.navigate('StartWorkout')}>
         <Text style={styles.buttonText}>Start Today's Workout</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity
+        style={styles.button}
+        onPress={() => navigation.navigate('History')}>
+        <Text style={styles.buttonText}>View History</Text>
       </TouchableOpacity>
 
       <Text style={styles.freqLabel}>How many days a week do you train?</Text>

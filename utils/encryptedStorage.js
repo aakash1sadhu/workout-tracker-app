@@ -7,6 +7,7 @@ const CUSTOM_EXERCISES_KEY = 'customExercises';
 const DELETED_KEY = 'deleted_exercises';
 const TRAINING_GOAL_KEY = 'training_goal';
 const HISTORY_KEY = 'workout_history';
+const IN_PROGRESS_KEY = 'workout_in_progress';
 
 export async function saveFavouriteExercises(exercises) {
   try {
@@ -170,5 +171,44 @@ export async function saveWorkoutHistory(entry) {
     await EncryptedStorage.setItem(HISTORY_KEY, JSON.stringify(history));
   } catch (err) {
     console.error('Failed to save workout history', err);
+  }
+}
+
+export async function saveWorkoutInProgress({
+  workout,
+  goal,
+  setProgress,
+  startTime,
+}) {
+  try {
+    await EncryptedStorage.setItem(
+      IN_PROGRESS_KEY,
+      JSON.stringify({
+        workout,
+        goal,
+        setProgress,
+        startTime: startTime ?? Date.now(),
+      }),
+    );
+  } catch (err) {
+    console.error('Failed to save workout in progress:', err);
+  }
+}
+
+export async function getWorkoutInProgress() {
+  try {
+    const data = await EncryptedStorage.getItem(IN_PROGRESS_KEY);
+    return data ? JSON.parse(data) : null;
+  } catch (err) {
+    console.error('Failed to load workout in progress:', err);
+    return null;
+  }
+}
+
+export async function clearWorkoutInProgress() {
+  try {
+    await EncryptedStorage.removeItem(IN_PROGRESS_KEY);
+  } catch (err) {
+    console.error('Failed to clear workout in progress:', err);
   }
 }

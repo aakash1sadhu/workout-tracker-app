@@ -14,8 +14,12 @@ import {
   getTrainingGoal,
   getGymFrequency,
   saveWorkoutHistory,
+  saveWorkoutInProgress,
+  getWorkoutInProgress,
+  clearWorkoutInProgress,
 } from '../utils/encryptedStorage';
 import {getTodayWorkoutPlan} from '../utils/generatePlan';
+import EncryptedStorage from 'react-native-encrypted-storage';
 
 const getRepsAndSets = goal => {
   const randBetween = (min, max) =>
@@ -39,6 +43,12 @@ export default function StartWorkoutScreen() {
   const [currentExerciseIndex, setCurrentExerciseIndex] = useState(0);
   const [currentSetIndex, setCurrentSetIndex] = useState(0);
   const [startTime, setStartTime] = useState(null);
+
+  const totalSets = workout.reduce((sum, ex) => sum + ex.sets, 0);
+
+  const completedSets = setProgress.reduce((sum, exSets) => {
+    return sum + exSets.filter(done => done).length;
+  }, 0);
 
   useEffect(() => {
     const loadWorkout = async () => {
@@ -65,6 +75,12 @@ export default function StartWorkoutScreen() {
       setWorkout(withRepsSets);
       setGoal(goal);
 
+      await saveWorkoutInProgress({
+        workout: withRepsSets,
+        goal,
+        setProgress: withRepsSets.map(ex => Array(ex.sets).fill(false)),
+      });
+
       //Run alert after React updates state
       if (withRepsSets.length === 0) {
         setTimeout(() => {
@@ -82,8 +98,41 @@ export default function StartWorkoutScreen() {
       setSetProgress(initalProgress);
     };
 
-    loadWorkout();
-    setStartTime(Date.now());
+    const checkInProgress = async () => {
+      const saved = await getWorkoutInProgress();
+
+      if (saved) {
+        Alert.alert(
+          'Resume Workout?',
+          'You had a workout in progress. Want to continue it?',
+          [
+            {
+              text: 'No, start fresh',
+              onPress: () => {
+                clearWorkoutInProgress();
+                loadWorkout();
+                setStartTime(Date.now());
+              },
+              style: 'destructive',
+            },
+            {
+              text: 'Yes, continue',
+              onPress: () => {
+                setWorkout(saved.workout);
+                setGoal(saved.goal);
+                setSetProgress(saved.setProgress);
+                setStartTime(saved.startTime);
+              },
+            },
+          ],
+        );
+      } else {
+        loadWorkout();
+        setStartTime(Date.now());
+      }
+    };
+
+    checkInProgress();
   }, []);
 
   const toggleSet = (exerciseIndex, setIndex) => {
@@ -156,9 +205,17 @@ export default function StartWorkoutScreen() {
     workout.length > 0 &&
     setProgress.every(exerciseSets => exerciseSets.every(set => set === true));
 
+  const isWorkoutInProgress =
+    workout.length > 0 &&
+    setProgress.length > 0 &&
+    setProgress.some(exerciseSets => exerciseSets.some(set => set === false));
+
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.title}>Today's Workout ({goal})</Text>
+      <Text style={styles.setCounter}>
+        {completedSets} of {totalSets} sets completed
+      </Text>
       <View style={styles.progressTracker}>
         <Text style={styles.progressTitle}>Now Doing:</Text>
         {workout[currentExerciseIndex] && (
@@ -184,7 +241,9 @@ export default function StartWorkoutScreen() {
                     styles.setItem,
                     setProgress[index]?.[setIdx] && styles.setItemDone,
                   ]}
-                  onPress={() => toggleSet(index, setIdx)}>
+                  onPress={() => toggleSet(index, setIdx)}
+                  disabled={setProgress[index]?.[setIdx]} //Prevent re-tap if already done
+                >
                   <Text style={styles.setText}>
                     Set {setIdx + 1}: {ex.reps} reps
                   </Text>
@@ -194,9 +253,11 @@ export default function StartWorkoutScreen() {
           </View>
         ))
       )}
-      <TouchableOpacity style={styles.nextButton} onPress={handleNextSet}>
-        <Text style={styles.nextButtonText}>Next Set</Text>
-      </TouchableOpacity>
+      {isWorkoutInProgress && (
+        <TouchableOpacity style={styles.nextButton} onPress={handleNextSet}>
+          <Text style={styles.nextButtonText}>Next Set</Text>
+        </TouchableOpacity>
+      )}
       {allSetsCompleted && (
         <TouchableOpacity
           style={styles.completeButton}
@@ -219,6 +280,13 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     textAlign: 'center',
     color: COLORS.textPrimary,
+  },
+  setCounter: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: COLORS.textSecondary,
+    textAlign: 'center',
+    marginBottom: 12,
   },
   exerciseCard: {
     backgroundColor: COLORS.card,
@@ -267,9 +335,11 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: 6,
     marginBottom: 6,
+    opacity: 1,
   },
   setItemDone: {
     backgroundColor: '#4caf50',
+    opacity: 0.6,
   },
   setText: {
     color: COLORS.textPrimary,
