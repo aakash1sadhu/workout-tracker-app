@@ -5,12 +5,40 @@ const splitByDays = {
   4: ['Upper', 'LowerBack', 'Upper', 'LowerBack'],
 };
 
+export function validateExercises(exercises, gymDays) {
+  const categoryCounts = exercises.reduce((acc, ex) => {
+    acc[ex.category] = (acc[ex.category] || 0) + 1;
+    return acc;
+  }, {});
+
+  if (gymDays === 2) {
+    return (categoryCounts['Full'] || 0) >= 2;
+  }
+
+  if (gymDays === 3) {
+    return (
+      (categoryCounts['Upper'] || 0) >= 1 &&
+      (categoryCounts['Lower'] || 0) >= 1 &&
+      (categoryCounts['Back'] || 0) >= 1
+    );
+  }
+
+  if (gymDays === 4) {
+    const hasUpper = (categoryCounts['Upper'] || 0) >= 1;
+    const hasLowerOrBack =
+      (categoryCounts['Lower'] || 0) >= 1 || (categoryCounts['Back'] || 0) >= 1;
+    return hasUpper && hasLowerOrBack;
+  }
+
+  return false;
+}
+
 export function generateWeeklyPlan(favouriteExercises, gymDays) {
   const plan = [];
   const split = splitByDays[gymDays];
 
-  if (!split) {
-    console.warn('Unsupported number of days: ', gymDays);
+  if (!split || !validateExercises(favouriteExercises, gymDays)) {
+    console.warn('⚠️ Not enough exercises to generate a valid plan');
     return [];
   }
 

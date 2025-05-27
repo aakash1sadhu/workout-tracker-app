@@ -72,7 +72,16 @@ export default function HomeScreen({navigation}) {
 
       <TouchableOpacity
         style={styles.button}
-        onPress={() => navigation.navigate('StartWorkout')}>
+        onPress={() => {
+          if (plan.length === 0) {
+            Alert.alert(
+              'Insufficient Exercises',
+              "You don't have enough exercises save for your selected workout frequency. Please add more.",
+            );
+          } else {
+            navigation.navigate('StartWorkout');
+          }
+        }}>
         <Text style={styles.buttonText}>Start Today's Workout</Text>
       </TouchableOpacity>
 
