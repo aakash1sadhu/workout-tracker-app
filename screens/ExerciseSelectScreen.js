@@ -26,6 +26,8 @@ export default function SelectExercisesScreen() {
   const [category, setCategory] = useState(null);
   const [allExercises, setAllExercises] = useState([]);
   const [trainingGoal, setTrainingGoal] = useState('Both');
+  const [isEditing, setIsEditing] = useState(false);
+  const [editTargetName, setEditTargetName] = useState(null);
 
   const handleSave = async () => {
     if (!exerciseName || !category) {
@@ -40,14 +42,39 @@ export default function SelectExercisesScreen() {
     };
 
     try {
-      await saveCustomExercise(newExercise);
+      const all = await getCustomExercises();
+      let updated;
+
+      if (isEditing && editTargetName) {
+        //Remove old one and replace
+        updated = all
+          .filter(ex => ex.name !== editTargetName)
+          .concat(newExercise);
+      } else {
+        //Check for duplicate
+        const exists = all.some(ex => ex.name === cleanedName);
+        if (exists) {
+          Alert.alert('Duplicate Exercise', 'This exercise already exists.');
+          return;
+        }
+        updated = [...all, newExercise];
+      }
+
+      await EncryptedStorage.setItem(
+        'customExercises',
+        JSON.stringify(updated),
+      );
+
+      //Reset state
       setExerciseName('');
       setCategory(null);
-      Alert.alert('Exercise saved!');
+      setIsEditing(false);
+      setEditTargetName(null);
 
+      Alert.alert(isEditing ? 'Exercise updated!' : 'Exercise saved!');
       await loadScreenData();
     } catch (err) {
-      console.error('Error saving and relaoding custom exercise:', err);
+      console.error('Error saving/editing exercise:', err);
     }
   };
 
@@ -104,29 +131,6 @@ export default function SelectExercisesScreen() {
     <ScrollView
       contentContainerStyle={styles.container}
       keyboardShouldPersistTaps="handled">
-      <Text style={styles.label}>Select Your Goal</Text>
-      <View style={styles.goalSlider}>
-        {['Strength', 'Both', 'Hypertrophy'].map(goal => (
-          <TouchableOpacity
-            key={goal}
-            style={[
-              styles.goalOption,
-              trainingGoal === goal && styles.goalOptionSelected,
-            ]}
-            onPress={() => {
-              setTrainingGoal(goal);
-              saveTrainingGoal(goal);
-            }}>
-            <Text
-              style={[
-                styles.goalText,
-                trainingGoal === goal && styles.goalTextSelected,
-              ]}>
-              {goal}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </View>
       <Text style={styles.title}>Add New Exercise</Text>
 
       <TextInput
@@ -158,17 +162,43 @@ export default function SelectExercisesScreen() {
       <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
         <Text style={styles.saveButtonText}>Save Exercise</Text>
       </TouchableOpacity>
+      {isEditing && (
+        <TouchableOpacity
+          style={styles.cancelButton}
+          onPress={() => {
+            setIsEditing(false);
+            setEditTargetName(null);
+            setExerciseName('');
+            setCategory(null);
+          }}>
+          <Text style={styles.saveButtonText}>Cancel Edit</Text>
+        </TouchableOpacity>
+      )}
+
       <Text style={styles.sectionTitle}>Your Exercises</Text>
       <View style={styles.exerciseList}>
         {allExercises.map((ex, index) => (
           <View key={index} style={styles.exerciseItem}>
             <Text style={styles.exerciseName}>{ex.name}</Text>
             <Text style={styles.exerciseCategory}>{ex.category}</Text>
-            <TouchableOpacity
-              style={styles.deleteButton}
-              onPress={() => handleDelete(ex.name)}>
-              <Text style={styles.deleteButtonText}>Delete</Text>
-            </TouchableOpacity>
+            <View style={styles.actionRow}>
+              <TouchableOpacity
+                style={styles.editButton}
+                onPress={() => {
+                  setExerciseName(ex.name);
+                  setCategory(ex.category);
+                  setIsEditing(true);
+                  setEditTargetName(ex.name);
+                }}>
+                <Text style={styles.editButtonText}>Edit</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.deleteButton}
+                onPress={() => handleDelete(ex.name)}>
+                <Text style={styles.deleteButtonText}>Delete</Text>
+              </TouchableOpacity>
+            </View>
           </View>
         ))}
       </View>
@@ -193,31 +223,6 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     color: COLORS.textPrimary,
     textAlign: 'center',
-  },
-  goalSlider: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    backgroundColor: COLORS.card,
-    borderRadius: 8,
-    marginVertical: 12,
-    padding: 4,
-  },
-  goalOption: {
-    flex: 1,
-    paddingVertical: 12,
-    alignItems: 'center',
-    borderRadius: 8,
-  },
-  goalOptionSelected: {
-    backgroundColor: COLORS.purple,
-  },
-  goalText: {
-    color: COLORS.textPrimary,
-    fontWeight: '500',
-  },
-  goalTextSelected: {
-    color: COLORS.buttonText,
-    fontWeight: 'bold',
   },
   input: {
     borderWidth: 1,
@@ -260,6 +265,18 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     fontSize: 16,
   },
+  cancelButton: {
+    backgroundColor: '#888',
+    padding: 15,
+    borderRadius: 8,
+    marginTop: 10,
+    alignItems: 'center',
+  },
+  cancelButtonText: {
+    color: COLORS.buttonText,
+    fontWeight: 'bold',
+    fontSize: 16,
+  },
   sectionTitle: {
     fontSize: 18,
     fontWeight: 'bold',
@@ -286,6 +303,23 @@ const styles = StyleSheet.create({
   exerciseCategory: {
     fontSize: 14,
     color: COLORS.textSecondary,
+  },
+  actionRow: {
+    flexDirection: 'row',
+    justifyContent: 'flex-start',
+    gap: 10,
+    marginTop: 8,
+  },
+  editButton: {
+    backgroundColor: COLORS.purple,
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 6,
+  },
+  editButtonText: {
+    color: COLORS.buttonText,
+    fontWeight: 'bold',
+    fontSize: 14,
   },
   deleteButton: {
     marginTop: 8,

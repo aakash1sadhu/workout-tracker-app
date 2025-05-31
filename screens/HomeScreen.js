@@ -22,6 +22,7 @@ export default function HomeScreen({navigation}) {
   const [customExercises, setCustomExercises] = useState([]);
   const [selectedDays, setSelectedDays] = useState(3);
   const [plan, setPlan] = useState([]);
+  const [analytics, setAnalytics] = useState(null);
 
   //Load saved exercises on mount
   useEffect(() => {
@@ -56,7 +57,33 @@ export default function HomeScreen({navigation}) {
     const checkLogs = async () => {
       const logs = await getWorkoutHistory();
       console.log('Saved workout logs:', logs);
+
+      if (logs.length === 0) {
+        setAnalytics(null);
+        return;
+      }
+
+      const totalWorkouts = logs.length;
+      const totalSets = logs.reduce((sum, log) => {
+        return sum + log.exercises.reduce((s, ex) => s + ex.sets, 0);
+      }, 0);
+
+      const last = logs[0];
+      const lastDate = new Date(last.date).toDateString();
+      const lastDuration = last.duration;
+      const lastSetCount = last.exercises.reduce((s, ex) => s + ex.sets, 0);
+
+      setAnalytics({
+        totalWorkouts,
+        totalSets,
+        last: {
+          date: lastDate,
+          duration: lastDuration,
+          sets: lastSetCount,
+        },
+      });
     };
+
     checkLogs();
   }, []);
 
@@ -91,23 +118,27 @@ export default function HomeScreen({navigation}) {
         <Text style={styles.buttonText}>View History</Text>
       </TouchableOpacity>
 
-      <Text style={styles.freqLabel}>How many days a week do you train?</Text>
-      <View style={styles.buttonGroup}>
-        {[2, 3, 4].map(num => (
-          <TouchableOpacity
-            key={num}
-            style={[
-              styles.freqButton,
-              num === selectedDays && styles.freqButtonActive,
-            ]}
-            onPress={() => {
-              setSelectedDays(num);
-              saveGymFrequency(num);
-            }}>
-            <Text style={styles.freqButtonText}>{num} Days</Text>
-          </TouchableOpacity>
-        ))}
-      </View>
+      <TouchableOpacity
+        style={styles.button}
+        onPress={() => navigation.navigate('Settings')}>
+        <Text style={styles.buttonText}>Settings</Text>
+      </TouchableOpacity>
+
+      {analytics && (
+        <View style={styles.analyticsCard}>
+          <Text style={styles.analyticsTitle}>📊 Your Progress</Text>
+          <Text style={styles.analyticsText}>
+            Total Workouts: {analytics.totalWorkouts}
+          </Text>
+          <Text style={styles.analyticsText}>
+            Total Sets Completed: {analytics.totalSets}
+          </Text>
+          <Text style={styles.analyticsText}>
+            Last Workout: {analytics.last.date} • {analytics.last.duration} min
+            • {analytics.last.sets} sets
+          </Text>
+        </View>
+      )}
       <View style={styles.planWrapper}>
         {plan.map((day, index) => (
           <View key={index} style={styles.dayCard}>
@@ -154,36 +185,28 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
   },
-  freqLabel: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: COLORS.textSecondary,
-    marginTop: 20,
-    marginBottom: 10,
-    textAlign: 'center',
-  },
-  buttonGroup: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    gap: 10,
-    marginBottom: 10,
-  },
-  freqButton: {
-    backgroundColor: COLORS.card,
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderRadius: 8,
-  },
-  freqButtonActive: {
-    backgroundColor: COLORS.purple,
-  },
-  freqButtonText: {
-    color: COLORS.textPrimary,
-    fontWeight: '600',
-  },
   planWrapper: {
     marginTop: 30,
     width: '100%',
+  },
+  analyticsCard: {
+    backgroundColor: COLORS.card,
+    borderRadius: 10,
+    padding: 16,
+    marginBottom: 20,
+    borderColor: COLORS.purple,
+    borderWidth: 1,
+  },
+  analyticsTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: COLORS.purple,
+    marginBottom: 8,
+  },
+  analyticsText: {
+    fontSize: 14,
+    color: COLORS.textPrimary,
+    marginBottom: 4,
   },
   dayCard: {
     backgroundColor: COLORS.card,
