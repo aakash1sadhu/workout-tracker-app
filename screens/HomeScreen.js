@@ -6,7 +6,8 @@ import {
   TouchableOpacity,
   ScrollView,
 } from 'react-native';
-import {useEffect, useState} from 'react';
+import {useFocusEffect} from '@react-navigation/native';
+import React, {useEffect, useState} from 'react';
 import {generateWeeklyPlan} from '../utils/generatePlan';
 import {COLORS} from '../utils/colors';
 import {
@@ -23,41 +24,40 @@ export default function HomeScreen({navigation}) {
   const [selectedDays, setSelectedDays] = useState(3);
   const [plan, setPlan] = useState([]);
   const [analytics, setAnalytics] = useState(null);
+  const [showOnboarding, setShowOnboarding] = useState(false);
 
   //Load saved exercises on mount
-  useEffect(() => {
-    const fetchData = async () => {
-      const saved = await getCustomExercises();
-      const deleted = await getDeletedExercises();
-      const filtered = saved.filter(
-        (ex, index, self) =>
-          index === self.findIndex(e => e.name === ex.name) &&
-          !deleted.includes(ex.name),
-      );
+  useFocusEffect(
+    React.useCallback(() => {
+      const fetchData = async () => {
+        const saved = await getCustomExercises();
+        const deleted = await getDeletedExercises();
 
-      const savedDays = await getGymFrequency();
+        const filtered = saved.filter(
+          (ex, index, self) =>
+            index === self.findIndex(e => e.name === ex.name) &&
+            !deleted.includes(ex.name),
+        );
 
-      setCustomExercises(filtered);
-      if (savedDays) {
-        setSelectedDays(savedDays);
-      }
-    };
-    fetchData();
-  }, []);
+        const savedDays = await getGymFrequency();
 
-  //Rengerate plan when exercises or days change
-  useEffect(() => {
-    if (customExercises.length > 0) {
-      const generated = generateWeeklyPlan(customExercises, selectedDays);
-      setPlan(generated);
-    }
-  }, [customExercises, selectedDays]);
+        const generated = generateWeeklyPlan(filtered, savedDays || 3);
+        setPlan([...generated]);
+
+        const shouldShowOnboarding =
+          filtered.length === 0 ||
+          savedDays === null ||
+          savedDays === undefined;
+        setShowOnboarding(shouldShowOnboarding);
+      };
+
+      fetchData();
+    }, []),
+  );
 
   useEffect(() => {
     const checkLogs = async () => {
       const logs = await getWorkoutHistory();
-      console.log('Saved workout logs:', logs);
-
       if (logs.length === 0) {
         setAnalytics(null);
         return;
@@ -90,7 +90,18 @@ export default function HomeScreen({navigation}) {
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.title}>🏋️ Home Screen</Text>
-
+      {showOnboarding && (
+        <View style={styles.onboardingCard}>
+          <Text style={styles.onboardingTitle}>👋 Welcome!</Text>
+          <Text style={styles.onboardingText}>To get started:</Text>
+          <Text style={styles.onboardingText}>
+            1. Add your favourite exercises
+          </Text>
+          <Text style={styles.onboardingText}>
+            2. Set your gym frequency in Settings
+          </Text>
+        </View>
+      )}
       <TouchableOpacity
         style={styles.button}
         onPress={() => navigation.navigate('Select Exercises')}>
@@ -170,6 +181,25 @@ const styles = StyleSheet.create({
     marginBottom: 30,
     color: COLORS.textPrimary,
     textAlign: 'center',
+  },
+  onboardingCard: {
+    backgroundColor: COLORS.card,
+    borderRadius: 10,
+    padding: 20,
+    marginBottom: 30,
+    borderLeftWidth: 4,
+    borderLeftColor: COLORS.purple,
+  },
+  onboardingTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: COLORS.purple,
+    marginBottom: 10,
+  },
+  onboardingText: {
+    fontSize: 14,
+    color: COLORS.textPrimary,
+    marginBottom: 4,
   },
   button: {
     backgroundColor: COLORS.buttonBackground,

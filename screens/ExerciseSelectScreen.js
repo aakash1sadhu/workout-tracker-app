@@ -312,7 +312,7 @@ const styles = StyleSheet.create({
   },
   editButton: {
     backgroundColor: COLORS.purple,
-    paddingVertical: 6,
+    paddingVertical: 4,
     paddingHorizontal: 12,
     borderRadius: 6,
   },

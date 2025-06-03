@@ -51,7 +51,7 @@ export function generateWeeklyPlan(favouriteExercises, gymDays) {
     });
 
     //Pick up to 3 exercises for the day
-    const selected = dayExercises.slice(0, 3);
+    const selected = dayExercises.slice(0, 5);
 
     plan.push({
       day: `Day ${i + 1}`,
