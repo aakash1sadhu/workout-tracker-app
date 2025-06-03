@@ -190,13 +190,13 @@ export default function SelectExercisesScreen() {
                   setIsEditing(true);
                   setEditTargetName(ex.name);
                 }}>
-                <Text style={styles.editButtonText}>Edit</Text>
+                <Text style={styles.editButtonText}>✏️</Text>
               </TouchableOpacity>
 
               <TouchableOpacity
                 style={styles.deleteButton}
                 onPress={() => handleDelete(ex.name)}>
-                <Text style={styles.deleteButtonText}>Delete</Text>
+                <Text style={styles.deleteButtonText}>❌</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -312,6 +312,7 @@ const styles = StyleSheet.create({
   },
   editButton: {
     backgroundColor: COLORS.purple,
+    marginTop: 8,
     paddingVertical: 4,
     paddingHorizontal: 12,
     borderRadius: 6,
@@ -323,7 +324,7 @@ const styles = StyleSheet.create({
   },
   deleteButton: {
     marginTop: 8,
-    backgroundColor: '#ff4d4d', // red to signal delete
+    backgroundColor: '#fff', // red to signal delete
     paddingVertical: 6,
     paddingHorizontal: 12,
     borderRadius: 6,

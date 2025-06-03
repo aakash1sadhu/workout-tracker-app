@@ -245,7 +245,8 @@ export default function StartWorkoutScreen() {
                   disabled={setProgress[index]?.[setIdx]} //Prevent re-tap if already done
                 >
                   <Text style={styles.setText}>
-                    Set {setIdx + 1}: {ex.reps} reps
+                    {setProgress[index][setIdx] ? '✅ ' : ''} Set {setIdx + 1}:{' '}
+                    {ex.reps} reps
                   </Text>
                 </TouchableOpacity>
               ))}

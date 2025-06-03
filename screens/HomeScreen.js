@@ -120,19 +120,19 @@ export default function HomeScreen({navigation}) {
             navigation.navigate('StartWorkout');
           }
         }}>
-        <Text style={styles.buttonText}>Start Today's Workout</Text>
+        <Text style={styles.buttonText}>🏋️ Start Today's Workout</Text>
       </TouchableOpacity>
 
       <TouchableOpacity
         style={styles.button}
         onPress={() => navigation.navigate('History')}>
-        <Text style={styles.buttonText}>View History</Text>
+        <Text style={styles.buttonText}>📅 View History</Text>
       </TouchableOpacity>
 
       <TouchableOpacity
         style={styles.button}
         onPress={() => navigation.navigate('Settings')}>
-        <Text style={styles.buttonText}>Settings</Text>
+        <Text style={styles.buttonText}>⚙️ Settings</Text>
       </TouchableOpacity>
 
       {analytics && (
@@ -243,6 +243,13 @@ const styles = StyleSheet.create({
     padding: 16,
     borderRadius: 10,
     marginBottom: 16,
+    borderLeftWidth: 4,
+    borderLeftColor: COLORS.purple,
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 1},
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 2,
   },
   dayTitle: {
     fontSize: 18,
