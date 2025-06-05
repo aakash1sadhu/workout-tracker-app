@@ -16,10 +16,10 @@ import {
   removeCustomExercise,
   getDeletedExercises,
   saveDeletedExercise,
-  saveTrainingGoal,
   getTrainingGoal,
 } from '../utils/encryptedStorage';
 import {get} from 'react-native/Libraries/TurboModule/TurboModuleRegistry';
+import {uploadCustomExercises} from '../utils/firebaseSync';
 
 export default function SelectExercisesScreen() {
   const [exerciseName, setExerciseName] = useState('');
@@ -65,6 +65,9 @@ export default function SelectExercisesScreen() {
         JSON.stringify(updated),
       );
 
+      //Sync to Firebase
+      await uploadCustomExercises('demoUser', updated);
+
       //Reset state
       setExerciseName('');
       setCategory(null);
@@ -89,6 +92,10 @@ export default function SelectExercisesScreen() {
 
     await saveDeletedExercise(name);
 
+    //Reload and sync
+    const updated = await getCustomExercises();
+    await uploadCustomExercises('demoUser', updated);
+
     //Reload the full state
     loadScreenData();
   };
@@ -103,6 +110,10 @@ export default function SelectExercisesScreen() {
       );
 
       setAllExercises([...unique]);
+
+      //Sync reset state
+      await uploadCustomExercises('demoUser', unique);
+
       Alert.alert('Reset complete', 'All exercises have been restored.');
     } catch (err) {
       console.error('Failed to reset deleted exercises', err);

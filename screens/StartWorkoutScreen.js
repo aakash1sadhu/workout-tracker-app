@@ -20,6 +20,7 @@ import {
 } from '../utils/encryptedStorage';
 import {getTodayWorkoutPlan} from '../utils/generatePlan';
 import EncryptedStorage from 'react-native-encrypted-storage';
+import {uploadWorkoutHistory} from '../utils/firebaseSync';
 
 const getRepsAndSets = goal => {
   const randBetween = (min, max) =>
@@ -34,6 +35,11 @@ const getRepsAndSets = goal => {
   if (goal === 'Hypertrophy') {
     return hypertrophy;
   }
+
+  return {
+    sets: randBetween(3, 5),
+    reps: randBetween(6, 10),
+  };
 };
 
 export default function StartWorkoutScreen() {
@@ -52,12 +58,13 @@ export default function StartWorkoutScreen() {
 
   useEffect(() => {
     const loadWorkout = async () => {
-      const [customExercises, deleted, goal, frequency] = await Promise.all([
-        getCustomExercises(),
-        getDeletedExercises(),
-        getTrainingGoal(),
-        getGymFrequency(),
-      ]);
+      const [customExercises, deleted, savedGoal, frequency] =
+        await Promise.all([
+          getCustomExercises(),
+          getDeletedExercises(),
+          getTrainingGoal(),
+          getGymFrequency(),
+        ]);
 
       const allExercises = customExercises.filter(
         (ex, index, self) =>
@@ -65,15 +72,20 @@ export default function StartWorkoutScreen() {
           !deleted.includes(ex.name),
       );
 
-      const todayPlan = getTodayWorkoutPlan(allExercises, frequency);
+      const todayPlan = getTodayWorkoutPlan(allExercises, frequency) || [];
+
+      if (!Array.isArray(todayPlan)) {
+        console.warn('Invalid todayPlan. Skipping workout init!');
+        return;
+      }
 
       const withRepsSets = todayPlan.map(ex => ({
         ...ex,
-        ...getRepsAndSets(goal),
+        ...getRepsAndSets(savedGoal),
       }));
 
       setWorkout(withRepsSets);
-      setGoal(goal);
+      setGoal(savedGoal);
 
       await saveWorkoutInProgress({
         workout: withRepsSets,
@@ -194,6 +206,7 @@ export default function StartWorkoutScreen() {
     };
 
     await saveWorkoutHistory(entry);
+    await uploadWorkoutHistory('demoUser', [entry]); //temp sync single entry
     Alert.alert('Workout Saved', `Logged! Duration ${durationMinutes} min`);
   };
 
@@ -245,8 +258,8 @@ export default function StartWorkoutScreen() {
                   disabled={setProgress[index]?.[setIdx]} //Prevent re-tap if already done
                 >
                   <Text style={styles.setText}>
-                    {setProgress[index][setIdx] ? '✅ ' : ''} Set {setIdx + 1}:{' '}
-                    {ex.reps} reps
+                    {setProgress?.[index]?.[setIdx] ? '✅ ' : ''} Set{' '}
+                    {setIdx + 1}: {ex.reps} reps
                   </Text>
                 </TouchableOpacity>
               ))}
