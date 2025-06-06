@@ -5,13 +5,15 @@ import HistoryScreen from './screens/HistoryScreen';
 import ExerciseSelectScreen from './screens/ExerciseSelectScreen';
 import StartWorkoutScreen from './screens/StartWorkoutScreen';
 import SettingsScreen from './screens/SettingsScreen';
+import LoginScreen from './screens/LoginScreen';
 
 const Stack = createStackNavigator();
 
 export default function App() {
   return (
     <NavigationContainer>
-      <Stack.Navigator initialRouteName="Home">
+      <Stack.Navigator initialRouteName="Login">
+        <Stack.Screen name="Login" component={LoginScreen} />
         <Stack.Screen name="Home" component={HomeScreen} />
         <Stack.Screen name="History" component={HistoryScreen} />
         <Stack.Screen

@@ -1,7 +1,10 @@
 import {collection, doc, setDoc, getDocs} from 'firebase/firestore';
-import {db} from './firebase';
+import {db, auth} from './firebase';
 
-export async function uploadCustomExercises(userId, exercises) {
+export async function uploadCustomExercises(
+  userId = auth.currentUser ? auth.currentUser.uid : 'demoUser',
+  exercises,
+) {
   try {
     const ref = doc(collection(db, 'users', userId, 'data'), 'customExercises');
     await setDoc(ref, {exercises});
@@ -11,7 +14,10 @@ export async function uploadCustomExercises(userId, exercises) {
   }
 }
 
-export async function uploadWorkoutHistory(userId, history) {
+export async function uploadWorkoutHistory(
+  userId = auth.currentUser ? auth.currentUser.uid : 'demoUser',
+  history,
+) {
   try {
     const ref = doc(collection(db, 'users', userId, 'data'), 'workoutHistory');
     await setDoc(ref, {history});

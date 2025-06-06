@@ -206,7 +206,7 @@ export default function StartWorkoutScreen() {
     };
 
     await saveWorkoutHistory(entry);
-    await uploadWorkoutHistory('demoUser', [entry]); //temp sync single entry
+    await uploadWorkoutHistory(undefined, [entry]); //temp sync single entry
     Alert.alert('Workout Saved', `Logged! Duration ${durationMinutes} min`);
   };
 

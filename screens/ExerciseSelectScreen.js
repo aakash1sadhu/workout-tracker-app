@@ -66,7 +66,7 @@ export default function SelectExercisesScreen() {
       );
 
       //Sync to Firebase
-      await uploadCustomExercises('demoUser', updated);
+      await uploadCustomExercises(undefined, updated);
 
       //Reset state
       setExerciseName('');
@@ -94,7 +94,7 @@ export default function SelectExercisesScreen() {
 
     //Reload and sync
     const updated = await getCustomExercises();
-    await uploadCustomExercises('demoUser', updated);
+    await uploadCustomExercises(undefined, updated);
 
     //Reload the full state
     loadScreenData();
@@ -112,7 +112,7 @@ export default function SelectExercisesScreen() {
       setAllExercises([...unique]);
 
       //Sync reset state
-      await uploadCustomExercises('demoUser', unique);
+      await uploadCustomExercises(undefined, unique);
 
       Alert.alert('Reset complete', 'All exercises have been restored.');
     } catch (err) {
