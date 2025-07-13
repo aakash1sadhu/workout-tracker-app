@@ -4,11 +4,20 @@
     "slug": "WorkoutTrackerFresh",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
-    "userInterfaceStyle": "light",
+    "icon": "./assets/images/icon.png",
+    "splash": {
+      "image": ".assets/images/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#EDE6F3"
+    },
+    "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true
+    },
+    "web": {
+      "output": "expo-static",
+      "favicon": "./assets/images/icon.png"
     }
   }
 }

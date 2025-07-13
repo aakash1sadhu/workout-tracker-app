@@ -38,6 +38,19 @@ export default function SelectExercisesScreen() {
     const newExercise = { name: cleanedName, category };
 
     try {
+      const existing = await getCustomExercises();
+
+      const isDuplicate = existing.some(
+        (ex) => ex.name === cleanedName && ex.name !== editTargetName
+      );
+      if (isDuplicate) {
+        Alert.alert(
+          "Duplicate Exercise",
+          "Another exercise already exists using this name."
+        );
+        return;
+      }
+
       if (isEditing && editTargetName) {
         const existing = await getCustomExercises();
         const updated = existing
